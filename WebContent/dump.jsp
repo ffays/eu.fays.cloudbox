@@ -17,11 +17,11 @@
 <%@page import="javax.servlet.ServletException"%>
 <%@page import="javax.servlet.http.HttpServletRequest"%>
 <%@page import="javax.servlet.http.HttpServletResponse"%>
-<%@page import="org.apache.commons.fileupload.FileItem"%>
-<%@page import="org.apache.commons.fileupload.FileItemFactory"%>
-<%@page import="org.apache.commons.fileupload.FileUploadException"%>
-<%@page import="org.apache.commons.fileupload.disk.DiskFileItemFactory"%>
-<%@page import="org.apache.commons.fileupload.servlet.ServletFileUpload"%>
+<%@page import="org.apache.tomcat.util.http.fileupload.FileItem"%>
+<%@page import="org.apache.tomcat.util.http.fileupload.FileUploadException"%>
+<%@page import="org.apache.tomcat.util.http.fileupload.disk.DiskFileItemFactory"%>
+<%@page import="org.apache.tomcat.util.http.fileupload.servlet.ServletFileUpload"%>
+<%@page import="org.apache.tomcat.util.http.fileupload.servlet.ServletRequestContext"%>
 <html>
 <head>
 <title>Dump</title>
@@ -119,19 +119,17 @@ td {
 	</tr>
 	<%
 		if (ServletFileUpload.isMultipartContent(request)) {
-			FileItemFactory diskFileItemFactory = new DiskFileItemFactory();
-			ServletFileUpload servletFileUpload = new ServletFileUpload(diskFileItemFactory);
+			final DiskFileItemFactory diskFileItemFactory = new DiskFileItemFactory();
+			final ServletFileUpload servletFileUpload = new ServletFileUpload(diskFileItemFactory);
 			try {
-				for (Object o : servletFileUpload.parseRequest(request)) {
-					FileItem fileItem = (FileItem) o;
-					if (fileItem.isFormField()) {
+				final ServletRequestContext servletRequestContext = new ServletRequestContext(request);
+				for (FileItem fileItem : servletFileUpload.parseRequest(servletRequestContext)) {
 	%>
 	<tr>
 		<th><%=fileItem.getFieldName()%></th>
-		<td><%=fileItem.getString()%></td>
+		<td><%=fileItem.isFormField()?fileItem.getString():fileItem.getName()%></td>
 	</tr>
 	<%
-		}
 				}
 
 			} catch (FileUploadException e) {

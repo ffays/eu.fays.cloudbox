@@ -1,8 +1,8 @@
 package eu.fays.sandweb.rest;
 
 import static eu.fays.sandweb.util.SortOrder.DESC;
-import static java.lang.System.lineSeparator;
 import static java.io.File.pathSeparator;
+import static java.lang.System.lineSeparator;
 import static java.text.MessageFormat.format;
 import static java.util.Collections.unmodifiableSet;
 import static java.util.Collections.unmodifiableSortedSet;
@@ -42,11 +42,12 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-import org.apache.commons.fileupload.FileItem;
-import org.apache.commons.fileupload.FileUploadException;
-import org.apache.commons.fileupload.disk.DiskFileItemFactory;
-import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.io.IOUtils;
+import org.apache.tomcat.util.http.fileupload.FileItem;
+import org.apache.tomcat.util.http.fileupload.FileUploadException;
+import org.apache.tomcat.util.http.fileupload.disk.DiskFileItemFactory;
+import org.apache.tomcat.util.http.fileupload.servlet.ServletFileUpload;
+import org.apache.tomcat.util.http.fileupload.servlet.ServletRequestContext;
 
 import eu.fays.sandweb.util.ValueComparator;
 
@@ -120,7 +121,8 @@ public class Dump extends HttpServlet {
 
 				ServletFileUpload servletFileUpload = new ServletFileUpload(diskFileItemFactory);
 				try {
-					multipartFormDataItems = servletFileUpload.parseRequest(request);
+					final ServletRequestContext servletRequestContext = new ServletRequestContext(request);
+					multipartFormDataItems = servletFileUpload.parseRequest(servletRequestContext);
 					for (FileItem fileItem : multipartFormDataItems) {
 						if (fileItem.isFormField()) {
 							writer.println(format("{0}: {1}", fileItem.getFieldName(), fileItem.getString()));
