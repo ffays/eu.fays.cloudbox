@@ -16,3 +16,5 @@ hs_err_pid*
 target
 build
 .gradle
+WebContent/WEB-INF/classes/
+${catalina.base}/
