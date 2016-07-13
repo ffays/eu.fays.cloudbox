@@ -17,4 +17,5 @@ target
 build
 .gradle
 WebContent/WEB-INF/classes/
+WebContent/WEB-INF/lib/
 ${catalina.base}/
