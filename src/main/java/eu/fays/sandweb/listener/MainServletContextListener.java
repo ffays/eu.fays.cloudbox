@@ -4,9 +4,9 @@ import java.text.MessageFormat;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.servlet.ServletContextEvent;
-import javax.servlet.ServletContextListener;
-import javax.servlet.annotation.WebListener;
+import jakarta.servlet.ServletContextEvent;
+import jakarta.servlet.ServletContextListener;
+import jakarta.servlet.annotation.WebListener;
 
 /**
  * Main Servlet Context listener
@@ -20,7 +20,7 @@ public class MainServletContextListener implements ServletContextListener {
 	// //////////////////////////////////////////////////////////
 
 	/**
-	 * @see javax.servlet.ServletContextListener#contextInitialized(javax.servlet.ServletContextEvent)
+	 * @see jakarta.servlet.ServletContextListener#contextInitialized(jakarta.servlet.ServletContextEvent)
 	 */
 	@Override
 	public void contextInitialized(final ServletContextEvent event) {
@@ -29,7 +29,7 @@ public class MainServletContextListener implements ServletContextListener {
 	}
 
 	/**
-	 * @see javax.servlet.ServletContextListener#contextDestroyed(javax.servlet.ServletContextEvent)
+	 * @see jakarta.servlet.ServletContextListener#contextDestroyed(jakarta.servlet.ServletContextEvent)
 	 */
 	@Override
 	public void contextDestroyed(final ServletContextEvent event) {
