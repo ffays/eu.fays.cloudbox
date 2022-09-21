@@ -14,10 +14,21 @@
 <%@page import="org.apache.tomcat.util.http.fileupload.disk.DiskFileItemFactory"%>
 <%@page import="org.apache.tomcat.util.http.fileupload.servlet.ServletFileUpload"%>
 <%@page import="org.apache.tomcat.util.http.fileupload.servlet.ServletRequestContext"%>
-<% 
-if("POST".equals(request.getMethod())) {
-	doPost(request, response);
-	return;
+<% if("POST".equals(request.getMethod())) { doPost(request, response); return; } %>
+<%!
+File store(final HttpServletRequest request, final File sourceFile, final String filename) {
+	final File targetDir = (File) getServletContext().getAttribute("jakarta.servlet.context.tempdir");
+	final File targetFile = new File(targetDir, substitueNTFSReservedCharacters(filename));
+	final Logger logger = Logger.getLogger(getClass().getName());
+	if (targetFile.exists()) {
+		boolean rc = sourceFile.delete();
+		if(!rc) logger.warning(format("Unable to delete ''{0}''!", sourceFile));
+	} else {
+		boolean rc = sourceFile.renameTo(targetFile);
+		if(rc) logger.info(format("Stored file ''{0}''", targetFile));
+		else logger.warning(format("Can''t move ''{0}'' to ''{1}''!", sourceFile, targetFile));
+	}
+	return targetFile;
 }
 %>
 <%!
@@ -99,27 +110,6 @@ protected void doPost(final HttpServletRequest request, final HttpServletRespons
 	logger.info(format("Uploaded file ''{0}''", filename));
 	final File targetFile = store(request, temporaryFile, filename);
 	writer.println(targetFile.getAbsolutePath());
-}
-%>
-<%!
-File store(final HttpServletRequest request, final File sourceFile, final String filename) {
-	final Logger logger = Logger.getLogger(getClass().getName());
-	final File tempDir = (File) getServletContext().getAttribute("jakarta.servlet.context.tempdir");
-	final File targetFile = new File(tempDir, substitueNTFSReservedCharacters(filename));
-	if (targetFile.exists()) {
-		boolean rc = sourceFile.delete();
-		if(!rc) {
-			logger.warning(format("Unable to delete ''{0}''!", sourceFile));
-		}
-	} else {
-		boolean rc = sourceFile.renameTo(targetFile);
-		if(rc) {
-			logger.info(format("Stored file ''{0}''", targetFile));
-		} else {
-			logger.warning(format("Can''t move ''{0}'' to ''{1}''!", sourceFile, targetFile));
-		}
-	}
-	return targetFile;
 }
 %>
 <%!
