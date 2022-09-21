@@ -60,16 +60,8 @@ protected void doPost(final HttpServletRequest request, final HttpServletRespons
 	fileItemFactory.setRepository(tempDir);
 
 	final ServletFileUpload servletFileUpload = new ServletFileUpload(fileItemFactory);
-	List<FileItem> items = null;
-	try {
-		final ServletRequestContext requestContext = new ServletRequestContext(request);
-		items = servletFileUpload.parseRequest(requestContext);
-	} catch (FileUploadException e) {
-		throw new ServletException(e);
-	}
-
-	// Request parameters
-	DiskFileItem binaryFileItem = null;
+	final ServletRequestContext requestContext = new ServletRequestContext(request);
+	final List<FileItem> items = servletFileUpload.parseRequest(requestContext);
 
 	// Retrieve the multipart/form-data parameters
 	for (final FileItem item : items) {
@@ -77,43 +69,25 @@ protected void doPost(final HttpServletRequest request, final HttpServletRespons
 			// do nothing
 		} else {
 			if (item.getName() != null && new File(item.getName()).getName().length() > 0) {
-				binaryFileItem = (DiskFileItem) item;
-				break; // only the first file item will be handled!
+				final DiskFileItem binaryFileItem = (DiskFileItem) item;
+				if (binaryFileItem == null) continue;
+				if (!binaryFileItem.getStoreLocation().exists()) continue;
+				final File temporaryFile = binaryFileItem.getStoreLocation();
+
+				String filename = binaryFileItem.getName();
+				if(filename.lastIndexOf(separatorChar) != -1) {
+					filename = filename.substring(filename.lastIndexOf(separatorChar)+1);
+				}
+				logger.info(format("Uploaded file ''{0}''", filename));
+				final File targetFile = store(request, temporaryFile, filename);
+				writer.println(targetFile.getAbsolutePath());	
 			}
 		}
 	}
-
-	// Check if a file has been provided
-	if (binaryFileItem == null) {
-		response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-		final String message = "No file has been provided!";
-		logger.log(SEVERE, message);
-		writer.write(message);
-		return;
-	}
-
-	// Check if the file is not empty
-	if (!binaryFileItem.getStoreLocation().exists()) {
-		response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-		final String message = "File is empty!";
-		logger.log(SEVERE, message);
-		writer.write(message);
-		return;
-	}
-
-	final File temporaryFile = binaryFileItem.getStoreLocation();
-
-	String filename = binaryFileItem.getName();
-	if(filename.lastIndexOf(separatorChar) != -1) {
-		filename = filename.substring(filename.lastIndexOf(separatorChar)+1);
-	}
-	logger.info(format("Uploaded file ''{0}''", filename));
-	final File targetFile = store(request, temporaryFile, filename);
-	writer.println(targetFile.getAbsolutePath());
 }
 %>
 <%!
-private static String substitueNTFSReservedCharacters(final String input) {
+String substitueNTFSReservedCharacters(final String input) {
 	String result = input;
 
 	final Pattern reservedCharactersPattern = Pattern.compile("[\\x00-\\x1F\\x22\\x2A\\x3A\\x3C\\x3E\\x3F\\x5C\\x7C]");
@@ -148,7 +122,7 @@ private static String substitueNTFSReservedCharacters(final String input) {
 <table>
 	<tr>
 		<th><label for="file">File</label><em>*</em></th>
-		<td><input type="file" id="file" name="file" accept="*/*" size="40" /></td>
+		<td><input type="file" id="file" name="file" accept="*/*" size="40" multiple/></td>
 	</tr>
 	<tr>
 		<th>&nbsp;</th>
